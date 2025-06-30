@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login and Signup</title>
+  <!-- <link rel="stylesheet" href="D:/SELF/Profile/Profile/static/register.css"> -->
+  <!-- <link href="{{ url_for('static', path='toaster.css') }}" rel="stylesheet"> -->
+  <link href="{{ url_for('static', path='register.css') }}" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="{{ url_for('static', path='js/toaster.js') }}"></script>
+
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div class="form-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <div class="input-group">
+            <label for="email">Email</label>
+            <input type="text" id="username" placeholder="Enter your Username" required>
+            </div>
+            <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <a href="#" class="toggle-password">👁️</a>
+            </div>
+            <a href="#" class="forgot-password">Forgot password?</a>
+            <button type="submit" class="btn">Login</button>
+            <p>Don't have an account? <a href="#">Signup</a></p>
+            <div class="or">Or</div>
+            <button type="button" class="social-btn facebook">Login with Facebook</button>
+            <button type="button" class="social-btn google">Login with Google</button>
+        </form>
+        </div>
+    </div>
+</body>
+<script>
+          document.getElementById("login-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            username=document.getElementById("username").value,
+            password=document.getElementById("password").value
+            console.log(username,password);
+
+            axios.post('http://127.0.0.1:8000/user/login',{
+                "username":username,
+                "password":password
+            })
+            .then(response=>{
+                console.log();
+                if (response.data.status_code==200){
+                toastfunc('green', response.data.message)
+                localStorage.setItem("Userdetails", JSON.stringify(response.data.UserDetails));
+                // getting data from local storage
+                // const userDetails = JSON.parse(localStorage.getItem("Userdetails"));
+
+            
+
+                window.location.href = '/dashboard';
+                console.log("abc>>>>>>>>",userDetails);
+
+                }
+                else{
+                    toastfunc('red', response.data.message)
+
+                }
+            })
+            .catch(error => {
+            console.error('Error during POST request:', error); 
+            });
+        });
+
+</script>
+</html>
