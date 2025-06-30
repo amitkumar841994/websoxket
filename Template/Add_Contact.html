@@ -1,0 +1,53 @@
+{%extends 'Header_Footer.html'%}
+{%block content%}
+<html>
+    <head>
+        <title>
+
+        </title>
+    </head>
+    <body>
+        <div class="Container">
+            <div class="row">
+                <div class="col">
+                    <form method="POST">
+                        {%csrf_token%}
+                        <div class="mb-3">
+                          <label for="exampleInputEmail1" class="form-label" >{{msg}}</label>
+                          <input type="Text" class="form-control" name="con_name" id="exampleInputEmail1" aria-describedby="emailHelp">
+                          
+                        </div>
+                        <div class="mb-3">
+                          <label for="exampleInputPassword1" class="form-label" >Mobile No.</label>
+                          <input type="text" class="form-control" name="con_mobile" id="exampleInputPassword1">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Contact</button>
+                      </form>
+
+                </div>
+
+
+                <div class="col">
+                  
+                  {%for data in adcon%}
+                  
+                    <div class="card mb-4" style="width: 10rem;">
+                        <div class="card-body">
+                          <h5 class="card-title">{{data.Con_name}}</h5>
+                          <h6 class="card-subtitle mb-2 text-muted">{{data.Con_Mobile}}</h6>
+                          <a href="{%url 'Chat' data.Con_Mobile%}" class="card-link">Chat</a>
+                          <a href="#" class="card-link">View</a>
+                        </div>
+                      </div>
+                      {%endfor%}
+                      
+                </div>
+               
+
+            </div>
+        </div>
+
+    </body>
+</html>
+{%endblock%}
