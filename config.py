@@ -12,7 +12,7 @@ uri = "mongodb+srv://amitkumar841994:bAyyuwJouF5lSctK@cluster0.cl04m.mongodb.net
 
 
 client_async = AsyncIOMotorClient(uri)
-db = client_async["Profiledb"]
+db = client_async["ChatApp"]
 
 
 try:
