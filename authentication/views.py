@@ -20,9 +20,7 @@ class NewUserRegistration:
     def __init__(self):
         self.router = APIRouter()
         self.router.add_api_route("/register", self.register, methods=["POST"])
-        # self.router.add_api_route("/login", self.user_login, methods=["POST"])
         self.router.add_api_route("/otp", self.create_otp, methods=["POST"])
-        # self.router.add_api_route("/auth_login", self.auth, methods=["GET"],name="login2")
 
 
     async def register(self, new_user:NewUser):
