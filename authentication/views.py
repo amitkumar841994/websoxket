@@ -19,7 +19,7 @@ load_dotenv()
 class NewUserRegistration:
     def __init__(self):
         self.router = APIRouter()
-        # self.router.add_api_route("/register", self.register, methods=["POST"])
+        self.router.add_api_route("/register", self.register, methods=["POST"])
         # self.router.add_api_route("/login", self.user_login, methods=["POST"])
         self.router.add_api_route("/otp", self.create_otp, methods=["POST"])
         # self.router.add_api_route("/auth_login", self.auth, methods=["GET"],name="login2")
@@ -28,21 +28,34 @@ class NewUserRegistration:
     async def register(self, new_user:NewUser):
 
         try:
-            result = db.User.find_one({ '$or': [{'email':new_user.email}, {'mobile':new_user.mobile}]})
-            print("User>>>>>>>", result)
+            result = await db.User.find_one({ '$or': [{'email':new_user.email}, {'mobile':new_user.mobile}]})
+            otp = await db.OTP.find_one({"email": new_user.email},sort=[("_id", -1)])
+
             if result:
-                if new_user.email== result['email'] :
-                    return {  "message": f"{new_user.email} already registered"}
-                if new_user.mobile== result['mobile'] :
-                    return {  "message": f"{new_user.mobile} already registered"}   
+                if otp["otp"] == new_user.otp:
+                    return {
+                        "message": "Logedin successfully",
+                        "status_code":200
+                        }
+                else:
+                    return {
+                        "message": "OTP is not valid",
+                        "status_code":400
+                        }
+    
             else :   
-                new_user.password =pwd_context.hash(new_user.password)  
-                result = db.User.insert_one(new_user.model_dump())
-                return {
-                    "message": "registered successfully",
-                    "data": new_user.model_dump(),
-                    "status_code":201
-                    }
+
+                if otp["otp"] == new_user.otp:
+                    result = db.User.insert_one(new_user.model_dump())
+                    return {
+                        "message": "Logedin successfully",
+                        "status_code":200
+                        }
+                else:
+                    return {
+                        "message": "OTP is not valid",
+                        "status_code":400
+                        }
         except Exception as e:
             return {
                     "message": f"{str(e)}",
@@ -51,8 +64,9 @@ class NewUserRegistration:
     
 
 
-    async def create_otp(self,email:str):
+    async def create_otp(self):
         try:
+            email="amitkumar841994@gmail.com"
             otp = random.randint(100000, 999999)  # Generate 6-digit OTP
             expiry = datetime.utcnow() + timedelta(minutes=5)
 
