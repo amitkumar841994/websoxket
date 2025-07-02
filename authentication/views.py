@@ -62,9 +62,10 @@ class NewUserRegistration:
     
 
 
-    async def create_otp(self):
+    async def create_otp(self,request: Request):
         try:
-            email="amitkumar841994@gmail.com"
+            body = await request.json()
+            email=body["email"]
             otp = random.randint(100000, 999999)  # Generate 6-digit OTP
             expiry = datetime.utcnow() + timedelta(minutes=5)
 
@@ -78,10 +79,10 @@ class NewUserRegistration:
             await db.OTP.insert_one(otp_data)
             await self.send_email(email,otp)
 
-            return {"otp": otp, "message": "OTP created successfully"}
+            return {"status":200,"success":True, "message": "OTP created successfully"}
         except Exception as e:
             print("otp is not working",e)
-            return {"otp": otp, "message": str(e)}
+            return {"status":400,"success":False,"message": str(e)}
 
 
     async def send_email(self,to_email: str,otp: str):

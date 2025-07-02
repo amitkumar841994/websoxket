@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login and Signup</title>
   <!-- <link rel="stylesheet" href="D:/SELF/Profile/Profile/static/register.css"> -->
-  <link href="{{ url_for('static', path='/register.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', path='CSS/Login.css') }}" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="{{ url_for('static', path='js/toaster.js') }}"></script>
 </head>
@@ -15,22 +15,21 @@
     <div class="form-container">
       <h2>Signup</h2>
       <form id="signup-form">
-        <div class="input-group">
+        <!-- <div class="input-group">
           <label for="signup-firstname">Username</label>
           <input type="text" id="first_name" placeholder="Enter Username" required>
+        </div> -->
+            <div class="input-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required required onblur="sendOtpOnBlur()">
         </div>
         <div class="input-group">
           <label for="signup-mobile">Mobile No.</label>
           <input type="text" id="mobile" placeholder="Enter your mobile number" required>
         </div>
         <div class="input-group">
-          <label for="signup-email">Email</label>
-          <input type="email" id="email" placeholder="Enter your email" required>
-        </div>
-
-        <div class="input-group">
           <label for="signup-email">OTP</label>
-          <input type="email" id="otp" placeholder="OTP" required>
+          <input type="email" id="otp" placeholder="OTP" required disabled>
         </div>
 
         <button type="submit" class="btn">Signup</button>
@@ -45,16 +44,13 @@
   <script>
       document.getElementById("signup-form").addEventListener("submit", function (event) {
       event.preventDefault();
-      first_name = document.getElementById("first_name").value
-      last_name = document.getElementById("last_name").value
       mobile = document.getElementById("mobile").value
       email = document.getElementById("email").value
-      password = document.getElementById("password").value
-      cnf_password = document.getElementById("cnfpassword").value
+      cnf_password = document.getElementById("otp").value
       console.log(password,cnf_password);
 
       if (cnf_password === password){
-        axios.post('http://127.0.0.1:8000/app1/register',{
+        axios.post('http://127.0.0.1:8000/user/register',{
         "first_name" : first_name,
         "last_name" : last_name,
         "email" : email,
@@ -83,8 +79,28 @@
 
       }
       });
+  </script>
+  <script>
+  
+    async function sendOtpOnBlur() {
+      const email = document.getElementById('email').value;
+      if (!email) return;
 
+      try {
+        // Call your backend to send OTP (adjust endpoint as needed)
+        const response = await axios.post('http://127.0.0.1:8000/user/otp', { email });
 
+        if (response.data.success) {
+          alert("OTP sent successfully!");
+          document.getElementById('otp').disabled = false; // Enable OTP input
+        } else {
+          alert("Failed to send OTP.");
+        }
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        alert("Something went wrong while sending OTP.");
+      }
+    }
 
 
   </script>
