@@ -35,7 +35,7 @@ app.include_router(auth_routes, prefix="/user", tags=["App1"])
 @app.get("/")
 async def root(request:Request):
     state = request.session.get('state', None) 
-    return templates.TemplateResponse("Login.html",{"request": request, "state": state})
+    return templates.TemplateResponse("New_user.html",{"request": request, "state": state})
 
 @app.get("/register")
 async def register(request: Request):
@@ -45,6 +45,6 @@ async def register(request: Request):
 # async def register(request: Request):
 #     return templates.TemplateResponse("userlogin.html", {"request": request})
 
-# @app.get("/dashboard",name="dashboard")
-# async def dashboard(request: Request):
-#     return templates.TemplateResponse("home.html", {"request": request})
+@app.get("/dashboard",name="dashboard")
+async def dashboard(request: Request):
+    return templates.TemplateResponse("Chat.html", {"request": request})

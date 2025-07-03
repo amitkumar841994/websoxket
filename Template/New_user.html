@@ -54,16 +54,19 @@
         "otp" :otp
         })
         .then(response => {
-        console.log(response.data);
+        console.log(">>>>>>>>>>",response.data.status_code);
         if (response.data.status_code==200){
             toastfunc('green', response.data.message)
-            }
-            else{
-                toastfunc('red', response.data.message)
+            document.getElementById('signup-form').reset() 
+            localStorage.setItem("Userdetails", JSON.stringify(response.data.UserDetails));
 
-            }
+            window.location.href = '/dashboard';
+            console.log("abc>>>>>>>>",userDetails);
+        }
+        else{
+            toastfunc('red', response.data.message)
 
-        document.getElementById('signup-form').reset() 
+        }
         })
         .catch(error => {
           console.error('Error during POST request:', error); // Handle the error
@@ -84,14 +87,15 @@
         const response = await axios.post('http://127.0.0.1:8000/user/otp', { email });
 
         if (response.data.success) {
-          alert("OTP sent successfully!");
+          toastfunc('green', "OTP sent successfully!")
           document.getElementById('otp').disabled = false; // Enable OTP input
         } else {
-          alert("Failed to send OTP.");
+    
+          toastfunc('red', "Failed to send OTP.")
         }
       } catch (error) {
         console.error("Error sending OTP:", error);
-        alert("Something went wrong while sending OTP.");
+        toastfunc('red', "Something went wrong while sending OTP.")
       }
     }
 

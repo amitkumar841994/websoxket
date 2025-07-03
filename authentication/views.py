@@ -44,7 +44,9 @@ class NewUserRegistration:
             else :   
 
                 if otp["otp"] == new_user.otp:
-                    result = db.User.insert_one(new_user.model_dump())
+                    print(">>>>>>>>>>",type(new_user))
+                
+                    result = db.User.insert_one(new_user.model_dump(exclude="otp"))
                     return {
                         "message": "Logedin successfully",
                         "status_code":200
