@@ -41,3 +41,38 @@ class ConnectionManager:
             await connection.send_text(message)
 
 manager = ConnectionManager()
+
+
+class Trigger:
+
+    async def watch_user_collection(self):
+        user_collection = db["User"]
+        contact_collection = db["Contact"]
+        print("Watching User collection for insert/delete...")
+        async with user_collection.watch() as stream:
+            async for change in stream:
+                op_type = change["operationType"]
+
+                if op_type == "insert":
+                    user_id = change["fullDocument"]["_id"]
+                    result = await contact_collection.update_one(
+                        {"_id": user_id},
+                        {"$set": {"is_registered": True}}
+                    )
+                    if result.modified_count:
+                        print(f" Contact '{user_id}' marked as registered.")
+                    else:
+                        print(f"No matching contact found for new user '{user_id}'.")
+
+                elif op_type == "delete":
+                    user_id = change["documentKey"]["_id"]
+                    result = await contact_collection.update_one(
+                        {"_id": user_id},
+                        {"$set": {"is_registered": False}}
+                    )
+                    if result.modified_count:
+                        print(f" Contact '{user_id}' marked as unregistered.")
+                    else:
+                        print(f"No matching contact found for deleted user '{user_id}'.")
+
+tigger_mongo = Trigger()

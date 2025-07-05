@@ -54,10 +54,11 @@
         "otp" :otp
         })
         .then(response => {
-        console.log(">>>>>>>>>>",response.data.status_code);
+        console.log(">>>>>>>>>>",response.data);
         if (response.data.status_code==200){
             toastfunc('green', response.data.message)
             document.getElementById('signup-form').reset() 
+            console.log(">>>>>>>>>>",response.data);
             localStorage.setItem("Userdetails", JSON.stringify(response.data.UserDetails));
 
             window.location.href = '/dashboard';

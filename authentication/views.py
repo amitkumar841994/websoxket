@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends,Request,HTTPException
 from authentication.models import NewUser,UserLogin
 import uuid
-from config import db
+from config import db,tigger_mongo
 # from utils.access_token_handler import pwd_context,create_access_token,create_refresh_token
 import json
 from fastapi.responses import RedirectResponse
@@ -26,13 +26,14 @@ class NewUserRegistration:
     async def register(self, new_user:NewUser):
 
         try:
-            result = await db.User.find_one({ '$or': [{'email':new_user.email}, {'mobile':new_user.mobile}]})
+            result = await db.User.find_one({"_id":new_user.email})
             otp = await db.OTP.find_one({"email": new_user.email},sort=[("_id", -1)])
-
+            print("data is exits>>>>",result)
             if result:
                 if otp["otp"] == new_user.otp:
                     return {
                         "message": "Logedin successfully",
+                        "UserDetails": new_user.model_dump(exclude="otp"),
                         "status_code":200
                         }
                 else:
@@ -45,10 +46,15 @@ class NewUserRegistration:
 
                 if otp["otp"] == new_user.otp:
                     print(">>>>>>>>>>",type(new_user))
+                    user_dict =new_user.model_dump(exclude={"otp"})
+                    user_dict["_id"] = user_dict.pop("email")
                 
-                    result = db.User.insert_one(new_user.model_dump(exclude="otp"))
+                    result = db.User.insert_one(user_dict)
+                    tigger_mongo.watch_user_collection()
                     return {
                         "message": "Logedin successfully",
+                        "UserDetails": new_user.model_dump(exclude="otp"),
+
                         "status_code":200
                         }
                 else:
@@ -108,3 +114,7 @@ class NewUserRegistration:
             return {"status": "success", "message": f"Email sent to {to_email}"}
         except Exception as e:
             return {"status": "error", "message": str(e)}
+        
+class SendMessage:
+    def __init__(self):
+        pass
