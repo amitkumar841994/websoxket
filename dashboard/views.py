@@ -73,7 +73,7 @@ class Contact:
                 results.append(doc)
             
 
-            print("username is>>>>>>>>",username)
+            print("username is>>>>>>>>1111",username)
             return {
                             "data": results,
                             "status_code":200
@@ -97,17 +97,25 @@ class SendMessage:
         try:
             while True:
                 data = await websocket.receive_text()
+                data = json.loads(data)
 
-            # Save to MongoDB
+                # Save to MongoDB
                 await self.messages_collection.insert_one({
-                    "user_id": user_id,
-                    "message": data,
-                    "timestamp": datetime.utcnow()
+                    "sender": user_id,
+                    "receiver": data.get("receiver"),
+                    "message": data.get("message"),
+                    "timestamp": datetime.now(),
+                    "status": "sent",
+                    # "chat_id": "amit841994@gmail.com__receiver@example.com"
                 })
 
-            await manager.broadcast(f"{user_id}: {data}")
+                await manager.broadcast(f"{user_id}: {data}")
         except WebSocketDisconnect:
             manager.disconnect(websocket)
             await manager.broadcast(f"{user_id} left the chat.")
             print(f"{user_id} left the chat.")
+        
+
+    async def reciver(self,websocket:WebSocket,user_id: str):
+        pass
         
