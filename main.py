@@ -7,8 +7,9 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 import os
-load_dotenv()
+from contextlib import asynccontextmanager
 
+load_dotenv()
 
 app = FastAPI()
 origins = ["*","http://127.0.0.1:8000"]
@@ -49,3 +50,4 @@ async def register(request: Request):
 @app.get("/dashboard",name="dashboard")
 async def dashboard(request: Request):
     return templates.TemplateResponse("Chat.html", {"request": request})
+

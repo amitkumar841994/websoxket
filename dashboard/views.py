@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,Request,HTTPException
 import uuid
-from config import db,manager,tigger_mongo
+from config import db,manager
 import json
 from fastapi.responses import RedirectResponse
 import uuid
@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 import os
 from fastapi import WebSocket, WebSocketDisconnect
 from dashboard.models import SaveContact
+from typing import Optional
+
 
 
 load_dotenv()
@@ -17,6 +19,7 @@ class Contact:
     def __init__(self):
         self.router = APIRouter()
         self.router.add_api_route("/save_contact/", self.save_contact, methods=["POST"])
+        self.router.add_api_route("/contact/",self.fetch_contact,methods=["GET"])
 
     async def save_contact(self,new_contact:SaveContact):
         try:
@@ -35,6 +38,9 @@ class Contact:
                 is_registered = await db.User.find_one({"_id":contact_dict["_id"]})
                 if is_registered:
                     contact_dict["is_registered"] = True
+                else:
+                    contact_dict["is_registered"] = False
+
 
                 db.Contact.insert_one(contact_dict)
             
@@ -50,6 +56,30 @@ class Contact:
                     "UserDetails": False,
                     "status_code":400
                 }
+    
+    
+
+    async def fetch_contact(self,request:Request):
+        username = request.query_params.get("username") 
+        try:
+            if username is None:
+                return {
+                    "message": "Username is NuLL",
+                    "status_code":400
+                }
+            results = []
+            resp = db.Contact.find({"saved_by":username})
+            async for doc in resp:
+                results.append(doc)
+            
+
+            print("username is>>>>>>>>",username)
+            return {
+                            "data": results,
+                            "status_code":200
+                            }
+        except Exception as e:
+            return{"message":str(e),"status_code":500}
         
 
 class SendMessage:

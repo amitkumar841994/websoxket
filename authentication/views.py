@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Depends,Request,HTTPException
 from authentication.models import NewUser,UserLogin
 import uuid
-from config import db,tigger_mongo
+from config import db
 # from utils.access_token_handler import pwd_context,create_access_token,create_refresh_token
 import json
 from fastapi.responses import RedirectResponse
@@ -49,8 +49,11 @@ class NewUserRegistration:
                     user_dict =new_user.model_dump(exclude={"otp"})
                     user_dict["_id"] = user_dict.pop("email")
                 
-                    result = db.User.insert_one(user_dict)
-                    tigger_mongo.watch_user_collection()
+                    result = await db.User.insert_one(user_dict)
+                    await db.Contact.update_one(
+                        {"_id": user_dict["_id"]},         # filter condition
+                        {"$set": {"is_registered": True}}  # update operation
+                    )
                     return {
                         "message": "Logedin successfully",
                         "UserDetails": new_user.model_dump(exclude="otp"),
