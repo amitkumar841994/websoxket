@@ -92,12 +92,14 @@ class SendMessage:
 
     async def sender(self, websocket: WebSocket, user_id: str):  # changed 'username' -> 'user_id'
         print("WebSocket connection attempt by:", user_id)
-        await manager.connect(websocket)  
+        await manager.connect(websocket,user_id)  
 
         try:
             while True:
                 data = await websocket.receive_text()
                 data = json.loads(data)
+                print("DATA IS<<<<<<<<",data)
+                
 
                 # Save to MongoDB
                 await self.messages_collection.insert_one({
@@ -109,11 +111,12 @@ class SendMessage:
                     # "chat_id": "amit841994@gmail.com__receiver@example.com"
                 })
 
-                await manager.broadcast(f"{user_id}: {data}")
+                # await manager.broadcast(f"{user_id}: {data}")
+                await manager.send_personal_message(f"{user_id}: {data.get("message")}", data.get("receiver"))
         except WebSocketDisconnect:
-            manager.disconnect(websocket)
-            await manager.broadcast(f"{user_id} left the chat.")
-            print(f"{user_id} left the chat.")
+            manager.disconnect(websocket,user_id)
+            # await manager.broadcst(f"{user_id} left the chat.")
+            # print(f"{user_id} left the chat.")
         
 
     async def reciver(self,websocket:WebSocket,user_id: str):

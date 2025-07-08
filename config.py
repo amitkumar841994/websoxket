@@ -24,21 +24,25 @@ except Exception as e:
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket,  user_id: str):
         await websocket.accept()
-        self.active_connections.append(websocket)
+        # self.active_connections.append(websocket)
+        self.active_connections[user_id] = websocket
         print("wesocket connected")
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        # self.active_connections.remove(websocket)
+        self.active_connections.pop(user_id, None)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send_personal_message(self, message: str, user_id: str):
+        websocket = self.active_connections.get(user_id)
+        if websocket:
+            await websocket.send_text(message)
 
     async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
+        for ws in self.active_connections.values():
+            await ws.send_text(message)
 
 manager = ConnectionManager()
