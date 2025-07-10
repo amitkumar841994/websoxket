@@ -68,7 +68,7 @@ class Contact:
                     "status_code":400
                 }
             results = []
-            resp = db.Contact.find({"saved_by":username})
+            resp = await db.Contact.find({"saved_by":username})
             async for doc in resp:
                 results.append(doc)
             
@@ -87,6 +87,7 @@ class SendMessage:
         self.router =APIRouter()
   
         self.router.add_api_websocket_route('/message/sender/{user_id}',self.sender)
+        self.router.add_api_route('/message/reciver/',self.reciver,methods=["GET"])
         self.messages_collection = db["Messages"]
 
 
@@ -119,6 +120,30 @@ class SendMessage:
             # print(f"{user_id} left the chat.")
         
 
-    async def reciver(self,websocket:WebSocket,user_id: str):
-        pass
+    async def reciver(self,request:Request):
+        sender = request.query_params.get("sender")
+        receiver = request.query_params.get("receiver")
+
+        try:
+            if sender is None and receiver is None:
+                return{
+                        "message": "Username is NuLL",
+                        "status_code":400
+                }
+            results = []
+            resp = db.Messages.find({"sender": sender, "receiver": receiver}).sort("timestamp", 1)
+
+            print(">>>>>>>>>>>",resp)
+            async for doc in resp:
+                doc["_id"] = str(doc["_id"])
+                results.append(doc)
+
+            return {
+                    "data": results,
+                    "status_code":200
+            }
+            
+        except Exception as e:
+            return{"message":str(e),"status_code":500}
+
         

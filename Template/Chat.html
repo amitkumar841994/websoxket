@@ -5,7 +5,7 @@
 {% block content %}
 
 
-<div class="container py-4">
+<div class="container py-4">1
   <div class="row">
     <!-- Sidebar -->
     <div class="col-md-4 mb-3">
@@ -121,7 +121,7 @@
 
 </script>
 
-  <script>
+<script>
     // 1. Open WebSocket connection
 
     const UserDetails = localStorage.getItem("Userdetails");
@@ -177,8 +177,10 @@ ws.onmessage = function (event) {
       if (message && ws.readyState === WebSocket.OPEN) {
         const payload = {
           sender: userdata.email,
+          sender_name: userdata.username,
           message: message,
-          receiver :selectedContact.id
+          receiver :selectedContact.id,
+          receiver :selectedContact.name
         };
 
         ws.send(JSON.stringify(payload));  // <-- Send JSON
