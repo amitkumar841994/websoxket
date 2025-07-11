@@ -2,14 +2,17 @@ from fastapi import APIRouter,Depends,Request,HTTPException
 import uuid
 from config import db,manager
 import json
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse,StreamingResponse
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,time
 from dotenv import load_dotenv
 import os
 from fastapi import WebSocket, WebSocketDisconnect
 from dashboard.models import SaveContact
 from typing import Optional
+import asyncio
+
+import time
 
 
 
@@ -26,7 +29,7 @@ class Contact:
             contact_dict =new_contact.model_dump()
             contact_dict["_id"] = contact_dict.pop("email")
 
-            resp = await db.Contact.find_one({"_id":contact_dict["_id"]})
+            resp =  db.Contact.find_one({"_id":contact_dict["_id"]})
             print("resp>>>>>>>>>",resp)
             if resp:
                 return {
@@ -68,7 +71,7 @@ class Contact:
                     "status_code":400
                 }
             results = []
-            resp = await db.Contact.find({"saved_by":username})
+            resp =  db.Contact.find({"saved_by":username})
             async for doc in resp:
                 results.append(doc)
             
@@ -120,30 +123,39 @@ class SendMessage:
             # print(f"{user_id} left the chat.")
         
 
-    async def reciver(self,request:Request):
+    async def reciver(self, request: Request):
         sender = request.query_params.get("sender")
         receiver = request.query_params.get("receiver")
 
-        try:
-            if sender is None and receiver is None:
-                return{
-                        "message": "Username is NuLL",
-                        "status_code":400
-                }
-            results = []
-            resp = db.Messages.find({"sender": sender, "receiver": receiver}).sort("timestamp", 1)
-
-            print(">>>>>>>>>>>",resp)
-            async for doc in resp:
-                doc["_id"] = str(doc["_id"])
-                results.append(doc)
-
+        if not sender or not receiver:
             return {
-                    "data": results,
-                    "status_code":200
+                "message": "Sender or receiver is missing",
+                "status_code": 400
             }
-            
-        except Exception as e:
-            return{"message":str(e),"status_code":500}
+
+        async def event_generator():
+            last_checked = time.time()
+            while True:
+                if await request.is_disconnected():
+                    break
+
+                cursor = self.messages_collection.find({
+                    "$or": [
+                        {"sender": sender, "receiver": receiver},
+                        {"sender": receiver, "receiver": sender}
+                    ],
+                    "timestamp": {"$gt": last_checked}
+                }).sort("timestamp", 1)
+
+                async for doc in cursor:
+                    doc["_id"] = str(doc["_id"])
+                    yield f"data: {json.dumps(doc)}\n\n"
+
+                last_checked = time.time()
+                await asyncio.sleep(1)
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+       
 
         
