@@ -44,6 +44,14 @@
           </div>
         </div> -->
 
+        <!-- Another Left -->
+        <!-- <div class="message-row message-left">
+          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" alt="avatar" class="avatar">
+          <div class="message-bubble message-bubble-left">
+            Sure, please go ahead.
+          </div>
+        </div> -->
+
       </div>
 
       <!-- Message Input -->
@@ -68,9 +76,11 @@
     }
     axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
       .then(response => {
+        console.log(">>>>>>>>>>>>>>>>>>", response.data);
 
         // Uncomment and adjust if your response is structured properly
         if (response.data.status_code === 200) {
+          console.log(">>>>>>>>>>>>>>>>>> working",)
 
           for (let list of response.data.data) {
             document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list._id}" data-name="${list.name}">
@@ -79,6 +89,8 @@
                 <div class="fw-bold">${list.name}</div>
                 <small>${list._id}</small>
               </div>
+                  <i class="fas fa-video"></i>  
+
             </li>`;
           }
         }
@@ -122,30 +134,32 @@
 
     const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
 
-  ws.onmessage = function (event) {
-    const chatBox = document.getElementById("chatBox");
-    const msg = JSON.parse(event.data);  // ⬅️ assuming the server sends JSON string
+ws.onmessage = function (event) {
+  const chatBox = document.getElementById("chatBox");
+  const msgText = event.data;
 
-    const UserDetails = localStorage.getItem("Userdetails");
-    const userdata = UserDetails ? JSON.parse(UserDetails) : null;
+  const isSender = msgText.startsWith("You:");
 
-    const isSender = msg.sender === userdata.email;
+  const messageRow = document.createElement("div");
+  messageRow.className = `message-row ${isSender ? "message-right" : "message-left"}`;
 
-    const bubble = `
-      <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
-        <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
-        <div class="message-bubble ${isSender ? 'message-bubble-left' : 'message-bubble-right'}">
-          ${msg.message}
-        </div>
-      </div>
-    `;
+  const avatar = document.createElement("img");
+  avatar.className = "avatar";
+  avatar.src = isSender
+    ? "https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp"
+    : "https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp";
 
-    chatBox.innerHTML += bubble;
+  const messageBubble = document.createElement("div");
+  messageBubble.className = `message-bubble ${isSender ? "message-bubble-right" : "message-bubble-left"}`;
+  messageBubble.textContent = msgText;
 
-    // Auto scroll to bottom
-    chatBox.scrollTop = chatBox.scrollHeight;
-  };
+  messageRow.appendChild(avatar);
+  messageRow.appendChild(messageBubble);
+  chatBox.appendChild(messageRow);
 
+  // Optional: auto-scroll to bottom
+  chatBox.scrollTop = chatBox.scrollHeight;
+};
 
     // 3. Send message on form submit
 // 3. Send message on form submit
@@ -167,7 +181,7 @@
           sender_name: userdata.username,
           message: message,
           receiver :selectedContact.id,
-          receiver_name :selectedContact.name
+          receiver :selectedContact.name
         };
 
         ws.send(JSON.stringify(payload));  // <-- Send JSON
@@ -178,42 +192,48 @@
 </script>
 
 
+
 <script>
-document.addEventListener("click", function () {
-  const UserDetails = localStorage.getItem("Userdetails");
-  const contactData = localStorage.getItem("selected_contact");
+  document.addEventListener("DOMContentLoaded", function () {
+    const UserDetails = localStorage.getItem("Userdetails");
+    const contactData = localStorage.getItem("selected_contact");
 
-  let userdata = UserDetails ? JSON.parse(UserDetails) : null;
-  let selectedContact = contactData ? JSON.parse(contactData) : null;
+    let userdata = null;
+    if (UserDetails) {
+        userdata = JSON.parse(UserDetails);
+      
+    }
+    let selectedContact = null;
 
-  if (!userdata || !selectedContact) return;
-
-  axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
-    .then(response => {
-      if (response.data.status_code === 200) {
-        const messages = response.data.message;
-        const chatBox = document.getElementById("chatBox");
-
-        chatBox.innerHTML = "";
-
-        for (let msg of messages) {
-          const isSender = msg.sender === userdata.email;
-          const bubble = `
-            <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
-              <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
-              <div class="message-bubble ${isSender ? 'message-bubble-left' : 'message-bubble-right'}">
-                ${msg.message}
-              </div>
-            </div>
-          `;
-          chatBox.innerHTML += bubble;
-        }
+      if (contactData) {
+        selectedContact = JSON.parse(contactData);
+      
       }
-    })
-    .catch(error => {
-      console.error('Error during GET request:', error);
-    });
-});
+    axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+      .then(response => {
+        console.log(">>>>>>>>>>>>>>>>>>response11111", response.data);
+
+        // Uncomment and adjust if your response is structured properly
+      //   if (response.data.status_code === 200) {
+      //     console.log(">>>>>>>>>>>>>>>>>> working",)
+
+      //     for (let list of response.data.data) {
+      //       console.log("for loop is working>>>",list)
+      //       document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list._id}" data-name="${list.name}">
+      //         <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" width="40" class="rounded-circle me-2">
+      //         <div>
+      //           <div class="fw-bold">${list.name}</div>
+      //           <small>${list._id}</small>
+      //         </div>
+      //       </li>`;
+      //     }
+      //   }
+      })
+      .catch(error => {
+        console.error('Error during GET request:', error);
+        toastfunc('red', 'An error occurred while fetching the data.');
+      });
+  });
 
 </script>
 
