@@ -74,7 +74,7 @@
         userdata = JSON.parse(UserDetails);
       
     }
-    axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
+    axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
       .then(response => {
         console.log(">>>>>>>>>>>>>>>>>>", response.data);
 
@@ -132,7 +132,7 @@
       
     }
 
-    const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
+    const ws = new WebSocket(`wss://tp-2ipn.onrender.com/chat/message/sender/${userdata.email}`);
 
 ws.onmessage = function (event) {
   const chatBox = document.getElementById("chatBox");
@@ -209,7 +209,7 @@ ws.onmessage = function (event) {
         selectedContact = JSON.parse(contactData);
       
       }
-    axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+    axios.get(`https://tp-2ipn.onrender.com//chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
       .then(response => {
         console.log(">>>>>>>>>>>>>>>>>>response11111", response.data);
 
