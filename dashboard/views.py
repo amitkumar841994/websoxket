@@ -4,7 +4,9 @@ from config import db,manager
 import json
 from fastapi.responses import RedirectResponse,StreamingResponse
 import uuid
-from datetime import datetime, timedelta,time
+from datetime import datetime, timedelta
+from datetime import datetime
+
 from dotenv import load_dotenv
 import os
 from fastapi import WebSocket, WebSocketDisconnect
@@ -90,7 +92,7 @@ class SendMessage:
         self.router =APIRouter()
   
         self.router.add_api_websocket_route('/message/sender/{user_id}',self.sender)
-        self.router.add_api_route('/message/reciver/',self.reciver,methods=["GET"])
+        self.router.add_api_route('/message/reciver/',self.get_chat_history,methods=["GET"])
         self.messages_collection = db["Messages"]
 
 
@@ -123,6 +125,7 @@ class SendMessage:
             # print(f"{user_id} left the chat.")
         
 
+
     async def reciver(self, request: Request):
         sender = request.query_params.get("sender")
         receiver = request.query_params.get("receiver")
@@ -134,7 +137,8 @@ class SendMessage:
             }
 
         async def event_generator():
-            last_checked = time.time()
+            last_checked = datetime.utcnow()
+
             while True:
                 if await request.is_disconnected():
                     break
@@ -144,18 +148,81 @@ class SendMessage:
                         {"sender": sender, "receiver": receiver},
                         {"sender": receiver, "receiver": sender}
                     ],
-                    "timestamp": {"$gt": last_checked}
                 }).sort("timestamp", 1)
 
+                found = False
                 async for doc in cursor:
                     doc["_id"] = str(doc["_id"])
+                    if isinstance(doc.get("timestamp"), datetime):
+                        doc["timestamp"] = doc["timestamp"].isoformat()  # 👈 Convert datetime
                     yield f"data: {json.dumps(doc)}\n\n"
+                    print("Data using streaming >>>>", doc)
 
-                last_checked = time.time()
+
+                if found:
+                    last_checked = datetime.utcnow()
+
                 await asyncio.sleep(1)
 
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
+
        
+
+    async def reciver_data(self, request: Request):
+        sender = request.query_params.get("sender")
+        receiver = request.query_params.get("receiver")
+
+        if not sender or not receiver:
+            return {
+                "message": "Sender or receiver is missing",
+                "status_code": 400
+            }
+
+        message=[]
+
+        cursor = self.messages_collection.find({
+            "$or": [
+                {"sender": sender, "receiver": receiver},
+                {"sender": receiver, "receiver": sender}
+            ],
+        }).sort("timestamp", 1)
+
+        found = False
+        async for doc in cursor:
+            doc["_id"] = str(doc["_id"])
+            print(">>>>>>>>>>>>>",doc)
+            message.append(doc)
+
+
+
+          
+
+        return {"message": "Saved successfuly","message": message,"status_code":200}
+
+
+    async def get_chat_history(self,request: Request):
+
+        sender = request.query_params.get("sender")
+        receiver = request.query_params.get("receiver")
+
+        if not sender or not receiver:
+            return {"message": "Sender or receiver missing", "status_code": 400}
+
+        messages = await db.Messages.find({
+            "$or": [
+                {"sender": sender, "receiver": receiver},
+                {"sender": receiver, "receiver": sender}
+            ]
+        }).sort("timestamp", 1).to_list(length=100)
+
+        # Format timestamps
+        for msg in messages:
+            msg["_id"] = str(msg["_id"])
+            if "timestamp" in msg:
+                msg["timestamp"] = msg["timestamp"].isoformat()
+
+        return {"status_code": 200, "message": messages}
+
 
         
