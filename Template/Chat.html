@@ -209,7 +209,7 @@ ws.onmessage = function (event) {
         selectedContact = JSON.parse(contactData);
       
       }
-    axios.get(`https://tp-2ipn.onrender.com//chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+    axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
       .then(response => {
         console.log(">>>>>>>>>>>>>>>>>>response11111", response.data);
 
