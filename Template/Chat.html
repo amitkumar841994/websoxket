@@ -125,32 +125,28 @@
 
     const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
 
-ws.onmessage = function (event) {
-  const chatBox = document.getElementById("chatBox");
-  const msgText = event.data;
+    ws.onmessage = function (event) {
+      const chatBox = document.getElementById("chatBox");
+      const msg = JSON.parse(event.data);  // ⬅️ assuming the server sends JSON string
 
-  const isSender = msgText.startsWith("You:");
+      const UserDetails = localStorage.getItem("Userdetails");
+      const userdata = UserDetails ? JSON.parse(UserDetails) : null;
 
-  const messageRow = document.createElement("div");
-  messageRow.className = `message-row ${isSender ? "message-right" : "message-left"}`;
+      const isSender = msg.sender === userdata.email;
 
-  const avatar = document.createElement("img");
-  avatar.className = "avatar";
-  avatar.src = isSender
-    ? "https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp"
-    : "https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp";
+      const bubble = `
+        <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
+          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
+          <div class="message-bubble ${isSender ? 'message-bubble-left' : 'message-bubble-right'}">
+            ${msg.message}
+          </div>
+        </div>`;
 
-  const messageBubble = document.createElement("div");
-  messageBubble.className = `message-bubble ${isSender ? "message-bubble-right" : "message-bubble-left"}`;
-  messageBubble.textContent = msgText;
+      chatBox.innerHTML += bubble;
 
-  messageRow.appendChild(avatar);
-  messageRow.appendChild(messageBubble);
-  chatBox.appendChild(messageRow);
-
-  // Optional: auto-scroll to bottom
-  chatBox.scrollTop = chatBox.scrollHeight;
-};
+      // Auto scroll to bottom
+      chatBox.scrollTop = chatBox.scrollHeight;
+    };
 
     // 3. Send message on form submit
 // 3. Send message on form submit
