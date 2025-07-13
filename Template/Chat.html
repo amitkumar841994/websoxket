@@ -135,18 +135,20 @@
       msg_data.push(msgTxt);
 
       localStorage.setItem("recived message",JSON.stringify(msg_data));
+      const contactData = localStorage.getItem("selected_contact");
+      let selectedContact = contactData ? JSON.parse(contactData) : null;
 
       const UserDetails = localStorage.getItem("Userdetails");
       const userdata = UserDetails ? JSON.parse(UserDetails) : null;
 
-      const isSender = msg.sender === userdata.email;
+      const isSender = msgTxt.sender === selectedContact.id;
       console.log("isSender>>>>>>>>>>",isSender)
 
       const bubble = `
         <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
           <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
           <div class="message-bubble ${isSender ? 'message-bubble-left' : 'message-bubble-right'}">
-            ${msg.message}
+            ${msgTxt.message}
           </div>
         </div>`;
 
