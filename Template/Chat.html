@@ -127,12 +127,20 @@
 
     ws.onmessage = function (event) {
       const chatBox = document.getElementById("chatBox");
-      const msg = JSON.parse(event.data);  // ⬅️ assuming the server sends JSON string
+      const msg = event.data;  // ⬅️ assuming the server sends JSON string
+      msgTxt = JSON.parse(msg)
+      console.log("EVENT DATA>>>>>>>",msgTxt)
+      const recived_msg = localStorage.getItem("recived message");
+      const msg_data = recived_msg ? JSON.parse(recived_msg) : [];
+      msg_data.push(msgTxt);
+
+      localStorage.setItem("recived message",JSON.stringify(msg_data));
 
       const UserDetails = localStorage.getItem("Userdetails");
       const userdata = UserDetails ? JSON.parse(UserDetails) : null;
 
       const isSender = msg.sender === userdata.email;
+      console.log("isSender>>>>>>>>>>",isSender)
 
       const bubble = `
         <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
@@ -172,6 +180,8 @@
         };
 
         ws.send(JSON.stringify(payload));  // <-- Send JSON
+        localStorage.setItem("sent message",JSON.stringify(payload));
+
         input.value = "";
       }
     });
@@ -200,9 +210,9 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let msg of messages) {
           const isSender = msg.sender === userdata.email;
           const bubble = `
-            <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
+            <div class="message-row ${isSender ? 'message-right' : 'message-left'}">
               <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
-              <div class="message-bubble ${isSender ? 'message-bubble-left' : 'message-bubble-right'}">
+              <div class="message-bubble ${isSender ? 'message-bubble-right' : 'message-bubble-left'}">
                 ${msg.message}
               </div>
             </div>
@@ -217,5 +227,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 </script>
+
+<script>
+  window.addEventListener("load", function () {
+    localStorage.removeItem("recived message"); 
+    localStorage.removeItem("sent message");
+  });
+</script>
+
 
 {% endblock %}

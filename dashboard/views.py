@@ -118,7 +118,13 @@ class SendMessage:
                 })
 
                 # await manager.broadcast(f"{user_id}: {data}")
-                await manager.send_personal_message(f"{user_id}: {data.get("message")}", data.get("receiver"))
+                # await manager.send_personal_message(f"{user_id}: {data.get("message")}", data.get("receiver"))
+                await manager.send_personal_message(json.dumps({
+                    "sender": user_id,
+                    "receiver": data.get("receiver"),
+                    "message": data.get("message"),
+                    "timestamp": datetime.now().isoformat()
+                }), data.get("receiver"))
         except WebSocketDisconnect:
             manager.disconnect(websocket,user_id)
             # await manager.broadcst(f"{user_id} left the chat.")
