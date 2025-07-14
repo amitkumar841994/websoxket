@@ -182,7 +182,26 @@
         };
 
         ws.send(JSON.stringify(payload));  // <-- Send JSON
-        localStorage.setItem("sent message",JSON.stringify(payload));
+        
+        const sent_msg = localStorage.getItem("sent message");
+        const msg_data = sent_msg ? JSON.parse(sent_msg) : [];
+        msg_data.push(payload);
+        localStorage.setItem("sent message",JSON.stringify(msg_data));
+        console.log("sender data is>>>>>>",msg_data)
+        let bubble =""
+        for (let msg of msg_data){
+          console.log("msg>>>>>>>>",userdata.email)
+          if (msg.sender === userdata.email){
+            bubble = `<div class="message-row message-right">
+            <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar" class="avatar">
+            <div class="message-bubble message-bubble-right">
+              ${msg.message}
+            </div>
+            </div`;
+
+          }
+          chatBox.innerHTML += bubble;
+        }
 
         input.value = "";
       }
