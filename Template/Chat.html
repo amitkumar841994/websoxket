@@ -66,16 +66,13 @@
         userdata = JSON.parse(UserDetails);
       
     }
-    axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
+    axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
       .then(response => {
-        console.log(">>>>>>>>>>>>>>>>>>", response.data);
 
         // Uncomment and adjust if your response is structured properly
         if (response.data.status_code === 200) {
-          console.log(">>>>>>>>>>>>>>>>>> working",)
 
           for (let list of response.data.data) {
-            console.log("for loop is working>>>",list)
             document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list._id}" data-name="${list.name}">
               <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" width="40" class="rounded-circle me-2">
               <div>
@@ -123,13 +120,12 @@
       
     }
 
-    const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
+    const ws = new WebSocket(`wss://tp-2ipn.onrender.com/chat/message/sender/${userdata.email}`);
 
     ws.onmessage = function (event) {
       const chatBox = document.getElementById("chatBox");
       const msg = event.data;  // ⬅️ assuming the server sends JSON string
       msgTxt = JSON.parse(msg)
-      console.log("EVENT DATA>>>>>>>",msgTxt)
       const recived_msg = localStorage.getItem("recived message");
       const msg_data = recived_msg ? JSON.parse(recived_msg) : [];
       msg_data.push(msgTxt);
@@ -142,7 +138,6 @@
       const userdata = UserDetails ? JSON.parse(UserDetails) : null;
 
       const isSender = msgTxt.sender === selectedContact.id;
-      console.log("isSender>>>>>>>>>>",isSender)
 
       const bubble = `
         <div class="message-row ${isSender ? 'message-left' : 'message-right'}">
@@ -187,21 +182,19 @@
         const msg_data = sent_msg ? JSON.parse(sent_msg) : [];
         msg_data.push(payload);
         localStorage.setItem("sent message",JSON.stringify(msg_data));
-        console.log("sender data is>>>>>>",msg_data)
+        const lastObj = msg_data[msg_data.length - 1];
         let bubble =""
-        for (let msg of msg_data){
-          console.log("msg>>>>>>>>",userdata.email)
-          if (msg.sender === userdata.email){
-            bubble = `<div class="message-row message-right">
-            <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar" class="avatar">
-            <div class="message-bubble message-bubble-right">
-              ${msg.message}
-            </div>
-            </div`;
+        if (lastObj.sender === userdata.email){
+          bubble = `<div class="message-row message-right">
+          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar" class="avatar">
+          <div class="message-bubble message-bubble-right">
+            ${lastObj.message}
+          </div>
+          </div`;
 
-          }
-          chatBox.innerHTML += bubble;
         }
+          chatBox.innerHTML += bubble;
+
 
         input.value = "";
       }
@@ -220,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!userdata || !selectedContact) return;
 
-  axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+  axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
     .then(response => {
       if (response.data.status_code === 200) {
         const messages = response.data.message;
