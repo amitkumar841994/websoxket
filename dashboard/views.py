@@ -40,21 +40,36 @@ class Contact:
                     "UserDetails": False,
                     "status_code":400
                     }
-            else:
-                is_registered = await db.User.find_one({"_id":contact_dict["email"]})
-                if is_registered:
-                    contact_dict["is_registered"] = True
                 else:
-                    contact_dict["is_registered"] = False
+                    is_registered = await db.User.find_one({"_id":contact_dict["email"]})
+                    if is_registered:
+                        contact_dict["is_registered"] = True
+                    else:
+                        contact_dict["is_registered"] = False
 
 
-                db.Contact.insert_one(contact_dict)
-            
-                return {
-                    "message": "Saved successfuly",
-                    "UserDetails": True,
-                    "status_code":200
-                }
+                    db.Contact.insert_one(contact_dict)
+                
+                    return {
+                        "message": "Saved successfuly",
+                        "UserDetails": True,
+                        "status_code":200
+                    }
+            else:
+                    is_registered = await db.User.find_one({"_id":contact_dict["email"]})
+                    if is_registered:
+                        contact_dict["is_registered"] = True
+                    else:
+                        contact_dict["is_registered"] = False
+
+
+                    db.Contact.insert_one(contact_dict)
+                
+                    return {
+                        "message": "Saved successfuly",
+                        "UserDetails": True,
+                        "status_code":200
+                    }
         except Exception as e:
             print("error is here>>>>",e)
             return {
