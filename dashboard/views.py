@@ -32,8 +32,8 @@ class Contact:
             # contact_dict["_id"] = contact_dict.pop("email")
 
             resp = await db.Contact.find_one({"email":contact_dict["email"]})
-            print("resp>>>>>>>>>",contact_dict["email"],resp)
-            if resp:
+            print("resp>>>>>>>>>",contact_dict,)
+            if resp["saved_by"] == contact_dict["saved_by"]:
                 return {
                 "message": "user already exist",
                 "UserDetails": False,
