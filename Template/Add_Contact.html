@@ -3,23 +3,24 @@
 {% block title %}Chat{% endblock %}
 
 {% block content %}
+
         <div class="Container">
             <div class="row">
                 <div class="col">
                     <form method="POST">
                         <div class="mb-3">
-                          <label for="exampleInputEmail1" class="form-label" >Email</label>
-                          <input type="Text" class="form-control" name="con_name" id="exampleInputEmail1" aria-describedby="emailHelp">
+                          <label for="exampleInputEmail1" class="form-label" >Name</label>
+                          <input type="Text" class="form-control" name="con_name" id="con_name" aria-describedby="emailHelp">
                           
                         </div>
                         <div class="mb-3">
-                          <label for="exampleInputEmail1" class="form-label" >Name</label>
-                          <input type="Text" class="form-control" name="con_name" id="exampleInputEmail1" aria-describedby="emailHelp">
+                          <label for="exampleInputEmail1" class="form-label" >Email</label>
+                          <input type="Text" class="form-control" name="con_email" id="con_email" aria-describedby="emailHelp">
                           
                         </div>
                         <div class="mb-3">
                           <label for="exampleInputPassword1" class="form-label" >Mobile No.</label>
-                          <input type="text" class="form-control" name="con_mobile" id="exampleInputPassword1">
+                          <input type="text" class="form-control" name="con_mobile" id="con_mobile">
                         </div>
 
                         <button type="submit" class="btn btn-primary">Add Contact</button>
@@ -44,5 +45,48 @@
 
             </div>
         </div>
+
+
+
+        <script>
+          document.getElementById("login-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            name=document.getElementById("con_name").value,
+            email=document.getElementById("con_email").value
+            mobile=document.getElementById("con_mobile").value
+            const UserDetails = localStorage.getItem("Userdetails");
+            const userdata = UserDetails ? JSON.parse(UserDetails) : null;
+
+            axios.post('https://tp-2ipn.onrender.com/chat/save_contact',{
+                "email":email,
+                "mobile":mobile,
+                "name":name,
+                "saved_by":userdata.email
+            })
+            .then(response=>{
+                console.log();
+                if (response.data.status_code==200){
+                toastfunc('green', response.data.message)
+                localStorage.setItem("Userdetails", JSON.stringify(response.data.UserDetails));
+                // getting data from local storage
+                // const userDetails = JSON.parse(localStorage.getItem("Userdetails"));
+
+            
+
+                window.location.href = '/Contact';
+                console.log("abc>>>>>>>>",userDetails);
+
+                }
+                else{
+                    toastfunc('red', response.data.message)
+
+                }
+            })
+            .catch(error => {
+            console.error('Error during POST request:', error); 
+            });
+        });
+
+        </script>
 
 {% endblock %}
