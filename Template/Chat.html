@@ -67,17 +67,19 @@
       
     }
     axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
+    // axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
       .then(response => {
 
         // Uncomment and adjust if your response is structured properly
+        console.log("response.data.data>>>>>>",response.data.data)
         if (response.data.status_code === 200) {
 
           for (let list of response.data.data) {
-            document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list._id}" data-name="${list.name}">
+            document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list.email}" data-name="${list.name}">
               <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" width="40" class="rounded-circle me-2">
               <div>
                 <div class="fw-bold">${list.name}</div>
-                <small>${list._id}</small>
+                <small>${list.email}</small>
               </div>
             </li>`;
           }
@@ -121,6 +123,7 @@
     }
 
     const ws = new WebSocket(`wss://tp-2ipn.onrender.com/chat/message/sender/${userdata.email}`);
+    // const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
 
     ws.onmessage = function (event) {
       const chatBox = document.getElementById("chatBox");
@@ -214,6 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!userdata || !selectedContact) return;
 
   axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+  // axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
     .then(response => {
       if (response.data.status_code === 200) {
         const messages = response.data.message;

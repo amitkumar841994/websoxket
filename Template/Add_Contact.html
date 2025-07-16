@@ -58,22 +58,18 @@
             const userdata = UserDetails ? JSON.parse(UserDetails) : null;
 
             axios.post('https://tp-2ipn.onrender.com/chat/save_contact',{
+            //  axios.post('http://127.0.0.1:8000/chat/save_contact',{
                 "email":email,
                 "mobile":mobile,
                 "name":name,
                 "saved_by":userdata.email
             })
             .then(response=>{
-                console.log();
+                console.log("response.data>>>>>>>",response.data);
                 if (response.data.status_code==200){
                 toastfunc('green', response.data.message)
-                localStorage.setItem("Userdetails", JSON.stringify(response.data.UserDetails));
-                // getting data from local storage
-                // const userDetails = JSON.parse(localStorage.getItem("Userdetails"));
 
-            
-
-                window.location.href = '/Contact';
+                window.location.href = '/dashboard';
                 console.log("abc>>>>>>>>",userDetails);
 
                 }

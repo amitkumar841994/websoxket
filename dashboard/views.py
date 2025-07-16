@@ -29,10 +29,10 @@ class Contact:
     async def save_contact(self,new_contact:SaveContact):
         try:
             contact_dict =new_contact.model_dump()
-            contact_dict["_id"] = contact_dict.pop("email")
+            # contact_dict["_id"] = contact_dict.pop("email")
 
-            resp =  db.Contact.find_one({"_id":contact_dict["_id"]})
-            print("resp>>>>>>>>>",resp)
+            resp = await db.Contact.find_one({"email":contact_dict["email"]})
+            print("resp>>>>>>>>>",contact_dict["email"],resp)
             if resp:
                 return {
                 "message": "user already exist",
@@ -40,7 +40,7 @@ class Contact:
                 "status_code":400
                 }
             else:
-                is_registered = await db.User.find_one({"_id":contact_dict["_id"]})
+                is_registered = await db.User.find_one({"_id":contact_dict["email"]})
                 if is_registered:
                     contact_dict["is_registered"] = True
                 else:
@@ -75,6 +75,7 @@ class Contact:
             results = []
             resp =  db.Contact.find({"saved_by":username})
             async for doc in resp:
+                doc["_id"] = str(doc["_id"])
                 results.append(doc)
             
 
