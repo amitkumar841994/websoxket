@@ -58,60 +58,6 @@
 </div>
 
 
-<!-- <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const UserDetails = localStorage.getItem("Userdetails");
-    let userdata = null;
-    if (UserDetails) {
-        userdata = JSON.parse(UserDetails);
-      
-    }
-    // axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
-    axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
-      .then(response => {
-
-        // Uncomment and adjust if your response is structured properly
-        console.log("response.data.data>>>>>>",response.data.data)
-        if (response.data.status_code === 200) {
-
-          for (let list of response.data.data) {
-            document.getElementById("contact_list").innerHTML += `<li class="list-group-item d-flex align-items-center" data-id="${list.email}" data-name="${list.name}">
-              <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" width="40" class="rounded-circle me-2">
-              <div>
-                <div class="fw-bold">${list.name}</div>
-                <small>${list.email}</small>
-              </div>
-            </li>`;
-          }
-        }
-      })
-      .catch(error => {
-        console.error('Error during GET request:', error);
-        toastfunc('red', 'An error occurred while fetching the data.');
-      });
-  });
-
-  contact_list.addEventListener("click",function(e){
-
-    const li = e.target.closest("li[data-id][data-name]");
-    if (li) {
-      const selectedId = li.getAttribute("data-id");
-      const selectedName = li.getAttribute("data-name");
-
-      console.log("Clicked:", selectedName, selectedId);
-          localStorage.setItem("selected_contact", JSON.stringify({
-          id: selectedId,
-          name: selectedName
-        }));
-    }
-
-  }); -->
-
-
-
-
-<!-- </script> -->
-
 <script>
     // 1. Open WebSocket connection
 
@@ -206,46 +152,6 @@
 </script>
 
 
-<!-- <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const UserDetails = localStorage.getItem("Userdetails");
-  const contactData = localStorage.getItem("selected_contact");
-
-  let userdata = UserDetails ? JSON.parse(UserDetails) : null;
-  let selectedContact = contactData ? JSON.parse(contactData) : null;
-
-  if (!userdata || !selectedContact) return;
-
-  // axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
-  axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
-    .then(response => {
-      if (response.data.status_code === 200) {
-        const messages = response.data.message;
-        const chatBox = document.getElementById("chatBox");
-
-        chatBox.innerHTML = "";
-
-        for (let msg of messages) {
-          const isSender = msg.sender === userdata.email;
-          const bubble = `
-            <div class="message-row ${isSender ? 'message-right' : 'message-left'}">
-              <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/${isSender ? 'avatar-6.webp' : 'avatar-5.webp'}" class="avatar">
-              <div class="message-bubble ${isSender ? 'message-bubble-right' : 'message-bubble-left'}">
-                ${msg.message}
-              </div>
-            </div>
-          `;
-          chatBox.innerHTML += bubble;
-        }
-      }
-    })
-    .catch(error => {
-      console.error('Error during GET request:', error);
-    });
-});
-
-</script> -->
-
 <script>
 axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
 function loadMessages(userdata, selectedContact) {
@@ -290,13 +196,23 @@ function fetchContacts(userdata) {
               <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" width="40" class="rounded-circle me-2">
               <div>
                 <div class="fw-bold">${contact.name}</div>
+                <div>
                 <small>${contact.email}</small>
+                <button onclick="startVideoCall('{contact.email}')" style="background:none; border:none; cursor:pointer;">
+                  <span class="material-icons">video_call</span> 
+              </button>
               </div>
+                
+
             </li>`;
         });
       }
     })
     .catch(error => console.error("Failed to fetch contacts:", error));
+}
+
+function startVideoCall(user_id){
+  console.log("video calling is working")
 }
 
 document.addEventListener("DOMContentLoaded", function () {
