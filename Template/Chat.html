@@ -55,7 +55,10 @@
       </form>
     </div>
   </div>
+  <video id="localVideo" autoplay playsinline muted></video>
+<video id="remoteVideo" autoplay playsinline></video>
 </div>
+
 
 
 <script>
@@ -153,7 +156,6 @@
 
 
 <script>
-axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
 function loadMessages(userdata, selectedContact) {
   // axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
   axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
@@ -198,9 +200,10 @@ function fetchContacts(userdata) {
                 <div class="fw-bold">${contact.name}</div>
                 <div>
                 <small>${contact.email}</small>
-                <button onclick="startVideoCall('{contact.email}')" style="background:none; border:none; cursor:pointer;">
-                  <span class="material-icons">video_call</span> 
-              </button>
+
+              <button onclick="startVideoCall('${contact.email}')" style="background:none; border:none; cursor:pointer;">
+                 <span class="material-icons">video_call</span> </button>
+
               </div>
                 
 
@@ -212,33 +215,45 @@ function fetchContacts(userdata) {
 }
 
 function startVideoCall(user_id){
-  console.log("video calling is working")
   const pc = new RTCPeerConnection();
+
   const localVideo = document.getElementById("localVideo");
+  const remoteVideo = document.getElementById("remoteVideo");
 
-navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-  .then(stream => {
-    localVideo.srcObject = stream;
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
-    return pc.createOffer();
-  })
-  .then(offer => pc.setLocalDescription(offer))
-  .then(() => {
-    return fetch("/send_offer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sdp: pc.localDescription.sdp,
-        type: pc.localDescription.type
-      })
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+      // Show local stream in video
+      localVideo.srcObject = stream;
+
+      // Add local stream to peer connection
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
     });
-  })
-  .then(res => res.json())
-  .then(answer => {
-    pc.setRemoteDescription(new RTCSessionDescription(answer));
-  });
 
+  // Receive remote stream
+  pc.ontrack = (event) => {
+    remoteVideo.srcObject = event.streams[0];
+  };
+
+  pc.createOffer()
+    .then(offer => pc.setLocalDescription(offer))
+    .then(() => {
+      return fetch("http://127.0.0.1:8000/chat/send_offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sdp: pc.localDescription.sdp,
+          type: pc.localDescription.type,
+          to_user: user_id
+        })
+      });
+    })
+    .then(res => res.json())
+    .then(answer => {
+      pc.setRemoteDescription(new RTCSessionDescription(answer));
+    })
+    .catch(err => console.error("Error during video call setup:", err));
 }
+
 
 document.addEventListener("DOMContentLoaded", function () {
   const UserDetails = localStorage.getItem("Userdetails");
@@ -276,6 +291,16 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.removeItem("sent message");
   });
 </script>
+
+
+<style>
+  video {
+    width: 300px;
+    height: 200px;
+    background-color: black;
+    margin: 10px;
+  }
+</style>
 
 
 {% endblock %}

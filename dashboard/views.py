@@ -252,9 +252,11 @@ class SendMessage:
 
     async def send_offer(self,request: Request):
         data = await request.json()
+        print(">daya is>>>>>>",type(data))
 
         async with aiohttp.ClientSession() as session:
             async with session.post("http://localhost:7000/sfu/offer", json=data) as resp:
+                print(">>>>>>>resp>>>>",type(resp))
                 return await resp.json()
 
         
