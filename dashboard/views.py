@@ -13,7 +13,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from dashboard.models import SaveContact
 from typing import Optional
 import asyncio
-
+import aiohttp
 import time
 
 
@@ -110,6 +110,7 @@ class SendMessage:
   
         self.router.add_api_websocket_route('/message/sender/{user_id}',self.sender)
         self.router.add_api_route('/message/reciver/',self.get_chat_history,methods=["GET"])
+        self.router.add_api_route('/send_offer',self.send_offer,methods=["POST"])
         self.messages_collection = db["Messages"]
 
 
@@ -149,79 +150,79 @@ class SendMessage:
         
 
 
-    async def reciver(self, request: Request):
-        sender = request.query_params.get("sender")
-        receiver = request.query_params.get("receiver")
+    # async def reciver(self, request: Request):
+    #     sender = request.query_params.get("sender")
+    #     receiver = request.query_params.get("receiver")
 
-        if not sender or not receiver:
-            return {
-                "message": "Sender or receiver is missing",
-                "status_code": 400
-            }
+    #     if not sender or not receiver:
+    #         return {
+    #             "message": "Sender or receiver is missing",
+    #             "status_code": 400
+    #         }
 
-        async def event_generator():
-            last_checked = datetime.utcnow()
+    #     async def event_generator():
+    #         last_checked = datetime.utcnow()
 
-            while True:
-                if await request.is_disconnected():
-                    break
+    #         while True:
+    #             if await request.is_disconnected():
+    #                 break
 
-                cursor = self.messages_collection.find({
-                    "$or": [
-                        {"sender": sender, "receiver": receiver},
-                        {"sender": receiver, "receiver": sender}
-                    ],
-                }).sort("timestamp", 1)
+    #             cursor = self.messages_collection.find({
+    #                 "$or": [
+    #                     {"sender": sender, "receiver": receiver},
+    #                     {"sender": receiver, "receiver": sender}
+    #                 ],
+    #             }).sort("timestamp", 1)
 
-                found = False
-                async for doc in cursor:
-                    doc["_id"] = str(doc["_id"])
-                    if isinstance(doc.get("timestamp"), datetime):
-                        doc["timestamp"] = doc["timestamp"].isoformat()  # 👈 Convert datetime
-                    yield f"data: {json.dumps(doc)}\n\n"
-                    print("Data using streaming >>>>", doc)
+    #             found = False
+    #             async for doc in cursor:
+    #                 doc["_id"] = str(doc["_id"])
+    #                 if isinstance(doc.get("timestamp"), datetime):
+    #                     doc["timestamp"] = doc["timestamp"].isoformat()  # 👈 Convert datetime
+    #                 yield f"data: {json.dumps(doc)}\n\n"
+    #                 print("Data using streaming >>>>", doc)
 
 
-                if found:
-                    last_checked = datetime.utcnow()
+    #             if found:
+    #                 last_checked = datetime.utcnow()
 
-                await asyncio.sleep(1)
+    #             await asyncio.sleep(1)
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+    #     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
        
 
-    async def reciver_data(self, request: Request):
-        sender = request.query_params.get("sender")
-        receiver = request.query_params.get("receiver")
+    # async def reciver_data(self, request: Request):
+    #     sender = request.query_params.get("sender")
+    #     receiver = request.query_params.get("receiver")
 
-        if not sender or not receiver:
-            return {
-                "message": "Sender or receiver is missing",
-                "status_code": 400
-            }
+    #     if not sender or not receiver:
+    #         return {
+    #             "message": "Sender or receiver is missing",
+    #             "status_code": 400
+    #         }
 
-        message=[]
+    #     message=[]
 
-        cursor = self.messages_collection.find({
-            "$or": [
-                {"sender": sender, "receiver": receiver},
-                {"sender": receiver, "receiver": sender}
-            ],
-        }).sort("timestamp", 1)
+    #     cursor = self.messages_collection.find({
+    #         "$or": [
+    #             {"sender": sender, "receiver": receiver},
+    #             {"sender": receiver, "receiver": sender}
+    #         ],
+    #     }).sort("timestamp", 1)
 
-        found = False
-        async for doc in cursor:
-            doc["_id"] = str(doc["_id"])
-            print(">>>>>>>>>>>>>",doc)
-            message.append(doc)
+    #     found = False
+    #     async for doc in cursor:
+    #         doc["_id"] = str(doc["_id"])
+    #         print(">>>>>>>>>>>>>",doc)
+    #         message.append(doc)
 
 
 
           
 
-        return {"message": "Saved successfuly","message": message,"status_code":200}
+    #     return {"message": "Saved successfuly","message": message,"status_code":200}
 
 
     async def get_chat_history(self,request: Request):
@@ -247,5 +248,13 @@ class SendMessage:
 
         return {"status_code": 200, "message": messages}
 
+
+
+    async def send_offer(self,request: Request):
+        data = await request.json()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post("http://localhost:7000/sfu/offer", json=data) as resp:
+                return await resp.json()
 
         

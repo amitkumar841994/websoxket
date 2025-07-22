@@ -213,6 +213,31 @@ function fetchContacts(userdata) {
 
 function startVideoCall(user_id){
   console.log("video calling is working")
+  const pc = new RTCPeerConnection();
+  const localVideo = document.getElementById("localVideo");
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+  .then(stream => {
+    localVideo.srcObject = stream;
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    return pc.createOffer();
+  })
+  .then(offer => pc.setLocalDescription(offer))
+  .then(() => {
+    return fetch("/send_offer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sdp: pc.localDescription.sdp,
+        type: pc.localDescription.type
+      })
+    });
+  })
+  .then(res => res.json())
+  .then(answer => {
+    pc.setRemoteDescription(new RTCSessionDescription(answer));
+  });
+
 }
 
 document.addEventListener("DOMContentLoaded", function () {
