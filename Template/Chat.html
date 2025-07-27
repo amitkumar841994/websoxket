@@ -219,7 +219,7 @@ function startVideoCall(user_id){
     const localVideo = document.getElementById('localVideo');
     const remoteVideo = document.getElementById('remoteVideo');
 
-    const signaling = new WebSocket(`ws://127.0.0.1:8000/chat/send_offer/${userdata.email}`);
+    const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/chat/send_offer/${userdata.email}`);
     const pc = new RTCPeerConnection();
 
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
