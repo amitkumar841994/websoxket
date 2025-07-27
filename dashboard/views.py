@@ -110,7 +110,8 @@ class SendMessage:
   
         self.router.add_api_websocket_route('/message/sender/{user_id}',self.sender)
         self.router.add_api_route('/message/reciver/',self.get_chat_history,methods=["GET"])
-        self.router.add_api_route('/send_offer',self.send_offer,methods=["POST"])
+        # self.router.add_api_route('/send_offer',self.send_offer,methods=["POST"])
+        self.router.add_api_websocket_route('send_offer/{user_id}',self.send_offer)
         self.messages_collection = db["Messages"]
 
 
@@ -150,81 +151,6 @@ class SendMessage:
         
 
 
-    # async def reciver(self, request: Request):
-    #     sender = request.query_params.get("sender")
-    #     receiver = request.query_params.get("receiver")
-
-    #     if not sender or not receiver:
-    #         return {
-    #             "message": "Sender or receiver is missing",
-    #             "status_code": 400
-    #         }
-
-    #     async def event_generator():
-    #         last_checked = datetime.utcnow()
-
-    #         while True:
-    #             if await request.is_disconnected():
-    #                 break
-
-    #             cursor = self.messages_collection.find({
-    #                 "$or": [
-    #                     {"sender": sender, "receiver": receiver},
-    #                     {"sender": receiver, "receiver": sender}
-    #                 ],
-    #             }).sort("timestamp", 1)
-
-    #             found = False
-    #             async for doc in cursor:
-    #                 doc["_id"] = str(doc["_id"])
-    #                 if isinstance(doc.get("timestamp"), datetime):
-    #                     doc["timestamp"] = doc["timestamp"].isoformat()  # 👈 Convert datetime
-    #                 yield f"data: {json.dumps(doc)}\n\n"
-    #                 print("Data using streaming >>>>", doc)
-
-
-    #             if found:
-    #                 last_checked = datetime.utcnow()
-
-    #             await asyncio.sleep(1)
-
-    #     return StreamingResponse(event_generator(), media_type="text/event-stream")
-
-
-       
-
-    # async def reciver_data(self, request: Request):
-    #     sender = request.query_params.get("sender")
-    #     receiver = request.query_params.get("receiver")
-
-    #     if not sender or not receiver:
-    #         return {
-    #             "message": "Sender or receiver is missing",
-    #             "status_code": 400
-    #         }
-
-    #     message=[]
-
-    #     cursor = self.messages_collection.find({
-    #         "$or": [
-    #             {"sender": sender, "receiver": receiver},
-    #             {"sender": receiver, "receiver": sender}
-    #         ],
-    #     }).sort("timestamp", 1)
-
-    #     found = False
-    #     async for doc in cursor:
-    #         doc["_id"] = str(doc["_id"])
-    #         print(">>>>>>>>>>>>>",doc)
-    #         message.append(doc)
-
-
-
-          
-
-    #     return {"message": "Saved successfuly","message": message,"status_code":200}
-
-
     async def get_chat_history(self,request: Request):
 
         sender = request.query_params.get("sender")
@@ -250,13 +176,13 @@ class SendMessage:
 
 
 
-    async def send_offer(self,request: Request):
-        data = await request.json()
-        print(">daya is>>>>>>",type(data))
-
-        async with aiohttp.ClientSession() as session:
-            async with session.post("http://localhost:7000/sfu/offer", json=data) as resp:
-                print(">>>>>>>resp>>>>",type(resp))
-                return await resp.json()
-
-        
+    async def send_offer(self,websocket: WebSocket, user_id: str):
+        await manager.connect(websocket, user_id)
+        print("working>>>>>>>>>")
+        try:
+            while True:
+                data = await websocket.receive_text()
+                await manager.broadcast(data)
+        except WebSocketDisconnect:
+            manager.disconnect(user_id)
+            

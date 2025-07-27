@@ -215,43 +215,50 @@ function fetchContacts(userdata) {
 }
 
 function startVideoCall(user_id){
-  const pc = new RTCPeerConnection();
 
-  const localVideo = document.getElementById("localVideo");
-  const remoteVideo = document.getElementById("remoteVideo");
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
 
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    .then(stream => {
-      // Show local stream in video
+    const signaling = new WebSocket(`ws://127.0.0.1:8000/chat/send_offer/${userdata.email}`);
+    const pc = new RTCPeerConnection();
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
       localVideo.srcObject = stream;
-
-      // Add local stream to peer connection
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
     });
 
-  // Receive remote stream
-  pc.ontrack = (event) => {
-    remoteVideo.srcObject = event.streams[0];
-  };
+    signaling.onmessage = async ({ data }) => {
+      const msg = JSON.parse(data);
+      console.log("type>>>>>>",msg)
+      if (msg.type === "offer") {
+        await pc.setRemoteDescription(msg);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        signaling.send(JSON.stringify(pc.localDescription));
+      } else if (msg.type === "answer") {
+        await pc.setRemoteDescription(msg);
+      } else if (msg.candidate) {
+        await pc.addIceCandidate(msg);
+      }
+    };
 
-  pc.createOffer()
-    .then(offer => pc.setLocalDescription(offer))
-    .then(() => {
-      return fetch("http://127.0.0.1:8000/chat/send_offer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sdp: pc.localDescription.sdp,
-          type: pc.localDescription.type,
-          to_user: user_id
-        })
-      });
-    })
-    .then(res => res.json())
-    .then(answer => {
-      pc.setRemoteDescription(new RTCSessionDescription(answer));
-    })
-    .catch(err => console.error("Error during video call setup:", err));
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        signaling.send(JSON.stringify(event.candidate));
+      }
+    };
+
+    pc.ontrack = (event) => {
+      remoteVideo.srcObject = event.streams[0];
+    };
+
+    async function createOffer() {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      signaling.send(JSON.stringify(offer));
+    }
+
+    signaling.onopen = () => createOffer();
 }
 
 
