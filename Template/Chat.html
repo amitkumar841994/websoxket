@@ -201,7 +201,7 @@ function fetchContacts(userdata) {
                 <div>
                 <small>${contact.email}</small>
 
-              <button onclick="startVideoCall('${contact.email}')" style="background:none; border:none; cursor:pointer;">
+              <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
                  <span class="material-icons">video_call</span> </button>
 
               </div>
@@ -214,8 +214,16 @@ function fetchContacts(userdata) {
     .catch(error => console.error("Failed to fetch contacts:", error));
 }
 
-function startVideoCall(user_id){
-  const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${user_id}`);
+function startVideoCall(){
+    const UserDetails = localStorage.getItem("Userdetails");
+    let userdata = null;
+    if (UserDetails) {
+        userdata = JSON.parse(UserDetails);
+      
+    }
+
+  const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${userdata.email}`);
+  console.log(">>>>>>>>>signalingsignalingsignaling",signaling)
   const pc = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
@@ -228,7 +236,9 @@ function startVideoCall(user_id){
 
   // 2. Handle signaling messages
   signaling.onmessage = async ({ data }) => {
+    console.log()
     const msg = JSON.parse(data);
+    console.log("msg>>>>>>>>>>>>>>>>",msg)
     if (msg.type === "offer") {
       await pc.setRemoteDescription(new RTCSessionDescription(msg));
       const answer = await pc.createAnswer();
