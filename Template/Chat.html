@@ -222,6 +222,13 @@ function startVideoCall(){
       
     }
 
+    const selected_contact = localStorage.getItem("selected_contact");
+    let selectedId = null;
+    if (selected_contact) {
+        selectedId = JSON.parse(selected_contact);
+      
+    }
+
   const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${userdata.email}`);
   console.log(">>>>>>>>>signalingsignalingsignaling",signaling)
   const pc = new RTCPeerConnection({
@@ -243,7 +250,7 @@ function startVideoCall(){
       await pc.setRemoteDescription(new RTCSessionDescription(msg));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      signaling.send(JSON.stringify({ ...answer, to: msg.from, from: myUserId }));
+      signaling.send(JSON.stringify({ ...answer, to: selectedId.id, from: userdata.email }));
     } else if (msg.type === "answer") {
       await pc.setRemoteDescription(new RTCSessionDescription(msg));
     } else if (msg.candidate) {
@@ -254,7 +261,7 @@ function startVideoCall(){
   // 3. ICE candidate
   pc.onicecandidate = event => {
     if (event.candidate) {
-      signaling.send(JSON.stringify({ ...event.candidate.toJSON(), to: user_id, from: myUserId }));
+      signaling.send(JSON.stringify({ ...event.candidate.toJSON(), to: selectedId.id, from: userdata.email }));
     }
   };
 
@@ -267,7 +274,7 @@ function startVideoCall(){
   signaling.onopen = async () => {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    signaling.send(JSON.stringify({ ...offer, to: user_id, from: myUserId }));
+    signaling.send(JSON.stringify({ ...offer, to: selectedId.id, from: userdata.email }));
   };
 
 }
