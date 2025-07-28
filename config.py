@@ -32,7 +32,7 @@ class ConnectionManager:
         self.active_connections[user_id] = websocket
         print("wesocket connected")
 
-    def disconnect(self, websocket: WebSocket, user_id: str):
+    def disconnect(self, user_id: str):
         # self.active_connections.remove(websocket)
         self.active_connections.pop(user_id, None)
 

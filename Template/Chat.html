@@ -215,50 +215,51 @@ function fetchContacts(userdata) {
 }
 
 function startVideoCall(user_id){
+  const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${user_id}`);
+  const pc = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
 
-    const localVideo = document.getElementById('localVideo');
-    const remoteVideo = document.getElementById('remoteVideo');
+  // 1. Setup local stream
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+    localVideo.srcObject = stream;
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+  });
 
-    const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/chat/send_offer/${userdata.email}`);
-    const pc = new RTCPeerConnection();
-
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-      localVideo.srcObject = stream;
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-    });
-
-    signaling.onmessage = async ({ data }) => {
-      const msg = JSON.parse(data);
-      console.log("type>>>>>>",msg)
-      if (msg.type === "offer") {
-        await pc.setRemoteDescription(msg);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        signaling.send(JSON.stringify(pc.localDescription));
-      } else if (msg.type === "answer") {
-        await pc.setRemoteDescription(msg);
-      } else if (msg.candidate) {
-        await pc.addIceCandidate(msg);
-      }
-    };
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        signaling.send(JSON.stringify(event.candidate));
-      }
-    };
-
-    pc.ontrack = (event) => {
-      remoteVideo.srcObject = event.streams[0];
-    };
-
-    async function createOffer() {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      signaling.send(JSON.stringify(offer));
+  // 2. Handle signaling messages
+  signaling.onmessage = async ({ data }) => {
+    const msg = JSON.parse(data);
+    if (msg.type === "offer") {
+      await pc.setRemoteDescription(new RTCSessionDescription(msg));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      signaling.send(JSON.stringify({ ...answer, to: msg.from, from: myUserId }));
+    } else if (msg.type === "answer") {
+      await pc.setRemoteDescription(new RTCSessionDescription(msg));
+    } else if (msg.candidate) {
+      await pc.addIceCandidate(new RTCIceCandidate(msg));
     }
+  };
 
-    signaling.onopen = () => createOffer();
+  // 3. ICE candidate
+  pc.onicecandidate = event => {
+    if (event.candidate) {
+      signaling.send(JSON.stringify({ ...event.candidate.toJSON(), to: user_id, from: myUserId }));
+    }
+  };
+
+  // 4. Remote video
+  pc.ontrack = (event) => {
+    remoteVideo.srcObject = event.streams[0];
+  };
+
+  // 5. Create offer
+  signaling.onopen = async () => {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    signaling.send(JSON.stringify({ ...offer, to: user_id, from: myUserId }));
+  };
+
 }
 
 

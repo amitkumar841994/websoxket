@@ -111,7 +111,7 @@ class SendMessage:
         self.router.add_api_websocket_route('/message/sender/{user_id}',self.sender)
         self.router.add_api_route('/message/reciver/',self.get_chat_history,methods=["GET"])
         # self.router.add_api_route('/send_offer',self.send_offer,methods=["POST"])
-        self.router.add_api_websocket_route('send_offer/{user_id}',self.send_offer)
+        self.router.add_api_websocket_route('/send_offer/{user_id}',self.send_offer)
         self.messages_collection = db["Messages"]
 
 
@@ -176,13 +176,15 @@ class SendMessage:
 
 
 
-    async def send_offer(self,websocket: WebSocket, user_id: str):
+    async def send_offer(self, websocket: WebSocket, user_id: str):
         await manager.connect(websocket, user_id)
-        print("working>>>>>>>>>")
         try:
             while True:
                 data = await websocket.receive_text()
-                await manager.broadcast(data)
+                message = json.loads(data)
+
+                target_id = message.get("to")
+                if target_id:
+                    await manager.send_personal_message(json.dumps(message), target_id)
         except WebSocketDisconnect:
             manager.disconnect(user_id)
-            
