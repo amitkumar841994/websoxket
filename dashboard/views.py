@@ -187,4 +187,4 @@ class SendMessage:
                 if target_id:
                     await manager.send_personal_message(json.dumps(message), target_id)
         except WebSocketDisconnect:
-            manager.disconnect(user_id)
+            manager.disconnect(websocket,user_id)

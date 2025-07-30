@@ -26,6 +26,14 @@
 
     <!-- Chat Area -->
     <div class="col-md-8">
+      <div class="card-header d-flex justify-content-between fw-bold" id="chat-header">
+        <!-- <span>Amitkumar</span>
+        <span class="d-flex gap-2">
+          <span>Pal</span>
+          <span>abc</span>
+        </span> -->
+      </div>
+
       <div class="chat-box" id="chatBox">
         
         <!-- Message Left (receiver) -->
@@ -280,6 +288,23 @@ function startVideoCall(){
 }
 
 
+function chat_header(selectedContact){
+  const header_name = document.getElementById("chat-header");
+    header_name.value =""
+    header_name.innerHTML = `
+        <span>${selectedContact.name}</span>
+        <span class="d-flex gap-2">
+          <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
+             <span class="material-icons">video_call</span> </button>
+              <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
+              <span class="material-icons">call</span> </button>
+        </span>`;
+
+
+              // <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
+              //    <span class="material-icons">video_call</span> </button>
+
+}
 document.addEventListener("DOMContentLoaded", function () {
   const UserDetails = localStorage.getItem("Userdetails");
   const contactData = localStorage.getItem("selected_contact");
@@ -293,6 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (selectedContact) {
     loadMessages(userdata, selectedContact);
+    chat_header(selectedContact)
   }
 
   document.getElementById("contact_list").addEventListener("click", function(e) {
@@ -305,6 +331,8 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem("selected_contact", JSON.stringify(selectedContact));
 
       loadMessages(userdata, selectedContact);
+      chat_header(selectedContact)
+
     }
   });
 });
