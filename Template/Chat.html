@@ -294,17 +294,42 @@ function chat_header(selectedContact){
     header_name.innerHTML = `
         <span>${selectedContact.name}</span>
         <span class="d-flex gap-2">
-          <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
+          <button onclick="openVideoPopup()" onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
              <span class="material-icons">video_call</span> </button>
               <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
               <span class="material-icons">call</span> </button>
         </span>`;
 
 
-              // <button onclick="startVideoCall()" style="background:none; border:none; cursor:pointer;">
-              //    <span class="material-icons">video_call</span> </button>
-
 }
+
+
+function openVideoPopup() {
+  const videoWindow = window.open('', 'VideoPopup', 'width=400,height=300');
+
+  // Add video HTML and stream
+  videoWindow.document.write(`
+    <html>
+      <head>
+        <title>Local Video</title>
+      </head>
+      <body style="margin:0">
+        <video id="popupVideo" autoplay playsinline muted style="width:100%; height:100%;"></video>
+        <script>
+          navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(stream => {
+              document.getElementById('popupVideo').srcObject = stream;
+            })
+            .catch(err => {
+              document.body.innerHTML = '<p>Error accessing webcam</p>';
+            });
+        <\/script>
+      </body>
+    </html>
+  `);
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
   const UserDetails = localStorage.getItem("Userdetails");
   const contactData = localStorage.getItem("selected_contact");
