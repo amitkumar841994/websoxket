@@ -88,8 +88,8 @@
       
     }
 
-    const ws = new WebSocket(`wss://tp-2ipn.onrender.com/chat/message/sender/${userdata.email}`);
-    // const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
+    // const ws = new WebSocket(`wss://tp-2ipn.onrender.com/chat/message/sender/${userdata.email}`);
+    const ws = new WebSocket(`ws://127.0.0.1:8000/chat/message/sender/${userdata.email}`);
 
     ws.onmessage = function (event) {
       const chatBox = document.getElementById("chatBox");
@@ -174,8 +174,8 @@
 
 <script>
 function loadMessages(userdata, selectedContact) {
-  // axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
-  axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+  axios.get(`http://127.0.0.1:8000/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
+  // axios.get(`https://tp-2ipn.onrender.com/chat/message/reciver/?sender=${userdata.email}&receiver=${selectedContact.id}`)
     .then(response => {
       if (response.data.status_code === 200) {
         const chatBox = document.getElementById("chatBox");
@@ -199,8 +199,8 @@ function loadMessages(userdata, selectedContact) {
 }
 
 function fetchContacts(userdata) {
-  // axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
-  axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
+  axios.get(`http://127.0.0.1:8000/chat/contact/?username=${userdata.email}`)
+  // axios.get(`https://tp-2ipn.onrender.com/chat/contact/?username=${userdata.email}`)
 
     .then(response => {
       if (response.data.status_code === 200) {
@@ -253,7 +253,8 @@ async function startVideoCall() {
   const selected_contact = localStorage.getItem("selected_contact");
   let selectedId = selected_contact ? JSON.parse(selected_contact) : null;
 
-  const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${userdata.email}`);
+  // const signaling = new WebSocket(`wss://tp-2ipn.onrender.com/chat/send_offer/${userdata.email}`);
+  const signaling = new WebSocket(`wss://127.0.0.1:8000/chat/send_offer/${userdata.email}`)
   const pc = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
