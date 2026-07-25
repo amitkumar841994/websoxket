@@ -113,7 +113,7 @@ class NewUserRegistration:
                 port=587,
                 start_tls=True,
                 username="amitkumar841994@gmail.com",       # Gmail or SMTP username
-                password="crtq lfqi avrr ngus")          
+                password="qpay yzld alhd hdmd")          
             return {"status": "success", "message": f"Email sent to {to_email}"}
         except Exception as e:
             return {"status": "error", "message": str(e)}

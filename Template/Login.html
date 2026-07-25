@@ -43,7 +43,7 @@
             password=document.getElementById("password").value
             console.log(username,password);
 
-            axios.post('http://127.0.0.1:8000/user/login',{
+            axios.post('/user/login',{
                 "username":username,
                 "password":password
             })

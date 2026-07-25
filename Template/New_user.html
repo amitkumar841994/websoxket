@@ -49,7 +49,7 @@
       otp = document.getElementById("otp").value
 
         // axios.post('https://tp-2ipn.onrender.com/user/register',{
-        axios.post('http://127.0.0.1:8000/user/register',{
+        axios.post('/user/register',{
 
         "email" : email,
         "mobile" : mobile,
@@ -88,7 +88,7 @@
       try {
         // Call your backend to send OTP (adjust endpoint as needed)
         // const response = await axios.post('https://tp-2ipn.onrender.com/user/otp', { email });
-        const response = await axios.post('http://127.0.0.1:8000/user/otp', { email });
+        const response = await axios.post('/user/otp', { email });
 
         if (response.data.success) {
           toastfunc('green', "OTP sent successfully!")

@@ -145,7 +145,7 @@ class SendMessage:
                     "timestamp": datetime.now().isoformat()
                 }), data.get("receiver"))
         except WebSocketDisconnect:
-            manager.disconnect(websocket,user_id)
+            manager.disconnect(user_id)
             # await manager.broadcst(f"{user_id} left the chat.")
             # print(f"{user_id} left the chat.")
         
