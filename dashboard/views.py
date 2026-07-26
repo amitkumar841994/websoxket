@@ -119,6 +119,9 @@ class SendMessage:
         print("WebSocket connection attempt by:", user_id)
         await manager.connect(websocket,user_id)  
 
+        participants = sorted([user_id, data.get("receiver")])
+        chat_id = f"{participants[0]}_{participants[1]}"
+
         try:
             while True:
                 data = await websocket.receive_text()
@@ -133,7 +136,7 @@ class SendMessage:
                     "message": data.get("message"),
                     "timestamp": datetime.now(),
                     "status": "sent",
-                    # "chat_id": "amit841994@gmail.com__receiver@example.com"
+                    "chat_id": chat_id
                 })
 
                 # await manager.broadcast(f"{user_id}: {data}")
